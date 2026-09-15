@@ -24,6 +24,20 @@ calculate the cumulative total using SUM() instead of looking at individual tran
 - When calculating totals (SUM) or counts (COUNT) per entity, ALWAYS use GROUP BY before ORDER BY.
 - If the question is ambiguous, make the most reasonable interpretation.
 
+Example 1 (Best-selling product):
+SELECT p."Product Name", SUM(s."Sales") AS "Total Sales" FROM products p JOIN sales s ON p."Product ID" = s."Product ID" 
+GROUP BY p."Product Name" ORDER BY "Total Sales" DESC LIMIT 1;
+
+Example 2 (Top spending customers):
+SELECT c."Customer Name", SUM(s."Sales") AS "Total Spending" FROM customers c JOIN sales s ON c."Customer ID" = s."Customer ID" 
+GROUP BY c."Customer Name" ORDER BY "Total Spending" DESC LIMIT 5;
+
+Example 3 (Questions about cities or states):
+SELECT c."State", SUM(s."Sales") AS "Total Sales" FROM customers c JOIN sales s ON c."Customer ID" = s."Customer ID" 
+GROUP BY c."State" ORDER BY "Total Sales" DESC LIMIT 1;
+
+
+
 Question : {question}
 
 SQL:"""

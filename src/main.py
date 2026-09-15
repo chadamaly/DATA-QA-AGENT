@@ -1,6 +1,6 @@
-from llm_engine import generate_sql
-from sql_executor import run_query
-from formatter import rephrase
+from agent.llm_engine import generate_sql
+from agent.sql_executor import run_query
+from agent.formatter import rephrase
 
 def answer(question: str)->str:
     print(f"n\Question: {question}")
