@@ -1,9 +1,27 @@
-from agent.llm_engine import generate_sql
+from agent.llm_engine import generate_sql, SCHEMA
 from agent.sql_executor import run_query
 from agent.formatter import rephrase
+from agent.intent_classifier import classify_intent
 
-def answer(question: str)->str:
+CANNED_RESPONSES = {
+    "GREETING": "Hello! Ask me anything about your customers, products or sales.",
+    "UNSAFE": "I can only read data, not modify it.",
+    "OUT_OF_SCOPE": "I can only answer questions about customers, products and sales.",
+}
+
+
+def answer(question: str)->tuple[str | None, str]:
     print(f"n\Question: {question}")
+
+    intent = classify_intent(question)
+    print(f"Intent: {intent}")
+
+    # Intents qui ne nécessitent pas de SQL
+    if intent in CANNED_RESPONSES:
+        return None, CANNED_RESPONSES[intent]
+
+    if intent == "SCHEMA_INFO":
+        return None, f"I can query these tables:\n{SCHEMA.strip()}"
 
     sql=generate_sql(question)
     print(f"Generated SQL :\n{sql}")
