@@ -22,12 +22,12 @@ The agent operates through a modular three-step pipeline :
 
 ```mermaid
 flowchart TD
-    A["User Question<br/>(Text)"] --> B["intent_classifier.py<br/>(Intent Classification)"]
+    A["User Question"] --> B["&nbsp;&nbsp;intent_classifier.py&nbsp;&nbsp;<br/>(Intent routing)"]
     B -->|DATA_QUERY| C["llm_engine.py<br/>(Text-to-SQL)"]
-    B -->|"Other intents<br/>(greeting, schema, unsafe, out of scope)"| F
-    C --> D["sql_executor.py<br/>(SQL Execution)"]
-    D --> E["formatter.py<br/>(SQL-to-Text)"]
-    E --> F["Final Answer<br/>(Text)"]
+    B -->|Other intents| F
+    C --> D["sql_executor.py<br/>(SQL execution)"]
+    D --> E["formatter.py<br/>(SQL-to-text)"]
+    E --> F["Final Answer"]
 
     style A fill:#e8f0fe,stroke:#4285f4
     style F fill:#e6f4ea,stroke:#34a853
