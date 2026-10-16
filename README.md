@@ -18,7 +18,7 @@ Dataset: [Superstore.csv on Kaggle](https://www.kaggle.com/datasets/binib1997/su
 
 ## Architecture
 
-The agent operates through a modular three-step pipeline :
+The agent operates through a modular pipeline. Each question is first classified, and only data questions go through the SQL steps:
 
 ```mermaid
 flowchart TD
