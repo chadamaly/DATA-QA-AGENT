@@ -9,9 +9,11 @@ Dataset: [Superstore.csv on Kaggle](https://www.kaggle.com/datasets/binib1997/su
 ## Features
 
 - **Natural language questions**: ask questions the way you'd ask a person ("Which customer spent the most?")
+- **Intent classification**: every message is routed before any SQL is generated (data question, schema question, greeting, unsafe request, out-of-scope)
 - **Automatic SQL generation**: an LLM (llama3 via Ollama) translates the question into a SQL query matching the database schema
 - **Safe execution**: queries are validated before execution: any write operation (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `CREATE`, `ATTACH`) is blocked, and the database is opened in read-only mode (`mode=ro`)
 - **Natural-language answers**: raw query results are turned into one or two plain sentences by the LLM
+- **100% local**: the LLM runs on your machine through Ollama, no data leaves it
 - **Two interfaces**: an interactive command-line loop and a Streamlit web app
 
 ## Architecture
@@ -20,19 +22,23 @@ The agent operates through a modular three-step pipeline :
 
 ```mermaid
 flowchart TD
-    A["User Question<br/>(Text)"] --> B["llm_engine.py<br/>(Text-to-SQL)"]
-    B --> C["sql_executor.py<br/>(SQL Execution)"]
-    C --> D["formatter.py<br/>(SQL-to-Text)"]
-    D --> E["Final Answer<br/>(Text)"]
+    A["User Question<br/>(Text)"] --> B["intent_classifier.py<br/>(Intent Classification)"]
+    B -->|DATA_QUERY| C["llm_engine.py<br/>(Text-to-SQL)"]
+    B -->|"Other intents<br/>(greeting, schema, unsafe, out of scope)"| F
+    C --> D["sql_executor.py<br/>(SQL Execution)"]
+    D --> E["formatter.py<br/>(SQL-to-Text)"]
+    E --> F["Final Answer<br/>(Text)"]
 
     style A fill:#e8f0fe,stroke:#4285f4
-    style E fill:#e6f4ea,stroke:#34a853
-    style C fill:#fef7e0,stroke:#f9ab00
-```
+    style F fill:#e6f4ea,stroke:#34a853
+    style D fill:#fef7e0,stroke:#f9ab00
+    style B fill:#fce8e6,stroke:#ea4335
 
-1. **`llm_engine.py`:** Translates raw user questions into optimized SQLite queries using a tailored *Few-Shot Prompting* technique driven by local **Llama 3** instances.
-2. **`sql_executor.py`:** Acts as a security layer. It parses queries to block unauthorized keywords (`DROP`, `DELETE`, etc.) and safely executes read-only operations directly on the SQLite database using native *URI parameters*   (`mode=ro`).
-3. **`formatter.py`:** Takes the raw tabular data (tuples) from SQLite and commands the LLM to format it into a concise, jargon-free business answer, preventing model "yapping."
+```
+1. **`intent_classifier.py`:** Routes each message before any SQL is generated: a regex filter blocks write requests, then Llama 3 labels the rest. Unclear cases default to `DATA_QUERY`, since the SQL layer is read-only anyway. 
+2. **`llm_engine.py`:** Translates raw user questions into optimized SQLite queries using a tailored *Few-Shot Prompting* technique driven by local **Llama 3** instances.
+3. **`sql_executor.py`:** Acts as a security layer. It parses queries to block unauthorized keywords (`DROP`, `DELETE`, etc.) and safely executes read-only operations directly on the SQLite database using native *URI parameters*   (`mode=ro`).
+4. **`formatter.py`:** Takes the raw tabular data (tuples) from SQLite and commands the LLM to format it into a concise, jargon-free business answer, preventing model "yapping."
 
 
 
